@@ -11,6 +11,8 @@ from ai_scientist.llm import get_response_from_llm, extract_json_between_markers
 
 S2_API_KEY = os.getenv("S2_API_KEY")
 
+IDEA_GEN_T = 1.
+
 problem_generation_prompt = """{task_description}
 Please give examples of open technical computational problems or open problems that can be addressed using computational approaches. Don't be afraid of being specific.
 """
@@ -145,6 +147,7 @@ def generate_ideas(
                 model=model,
                 system_message=idea_system_prompt,
                 msg_history=msg_history,
+                temperature=IDEA_GEN_T,
             )
             ## PARSE OUTPUT
             json_output = extract_json_between_markers(text)
