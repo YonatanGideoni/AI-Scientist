@@ -16,11 +16,14 @@ idea_first_prompt = """{task_description}
 {code}
 </experiment.py>
 
-Come up with the next impactful and creative idea for research experiments and directions you can feasibly investigate with the code provided.TBD
-Note that you will not have access to any additional resources or datasets.
-Make sure any idea is not overfit the specific training dataset or model, and has wider significance.
+Think about an interesting, deep, nuanced problem you want to solve and how you may go about solving it. It doesn't have to be grand, eg. solving intelligence, but it should be a real problem that you can feasibly investigate or at least make a simple proof of concept towards a possible solution. It can be in machine learning or any other field you are interested in and can deal with via computational means.
+Note that you will not have access to any additional resources or datasets except perhaps artificial ones you generate.
+Make sure the problem is well-defined and the solution is clear, feasible, and not overfit to the problem.
 
-Respond in the following format:TBD
+Respond in the following format:
+
+PROBLEM:
+<PROBLEM>
 
 THOUGHT:
 <THOUGHT>
@@ -30,11 +33,12 @@ NEW IDEA JSON:
 <JSON>
 ```
 
-In <THOUGHT>, first briefly discuss your intuitions and motivations for the idea. Detail your high-level plan, necessary design choices and ideal outcomes of the experiments. Justify how the idea is different from the existing ones.TBD
+In <THOUGHT>, first briefly discuss your intuitions and motivations for the idea. Detail your high-level plan, necessary design choices, ideal outcomes of the experiments, and how it answers/resolves the problem.
 
 In <JSON>, provide the new idea in JSON format with the following fields:
 - "Name": A shortened descriptor of the idea. Lowercase, no spaces, underscores allowed.
 - "Title": A title for the idea, will be used for the report writing.
+- "Problem": A description of the problem.
 - "Experiment": An outline of the implementation. E.g. which functions need to be added or modified, how results will be obtained, ...
 - "Interestingness": A rating from 1 to 10 (lowest to highest).
 - "Feasibility": A rating from 1 to 10 (lowest to highest).
@@ -46,14 +50,19 @@ You will have {num_reflections} rounds to iterate on the idea, but do not need t
 """
 
 idea_reflection_prompt = """Round {current_round}/{num_reflections}.
-In your thoughts, first carefully consider the quality, novelty, and feasibility of the idea you just created.
+In your thoughts, first carefully consider the quality, novelty, and feasibility of the idea you just created to solve the given problem.
 Include any other factors that you think are important in evaluating the idea.
 Ensure the idea is clear and concise, and the JSON is the correct format.
 Do not make things overly complicated.
 In the next attempt, try and refine and improve your idea.
-Stick to the spirit of the original idea unless there are glaring issues.
+You can also refine and improve the problem statement, the experiment, or any other part of the idea.
+Stick to the spirit of the original idea unless there are significant issues.
 
-Respond in the same format as before:TBD
+Respond in the same format as before:
+
+PROBLEM:
+<PROBLEM>
+
 THOUGHT:
 <THOUGHT>
 
@@ -89,12 +98,6 @@ def generate_ideas(
         except json.JSONDecodeError:
             print("Error decoding existing ideas. Generating new ideas.")
 
-    idea_str_archive = []
-    with open(osp.join(base_dir, "seed_ideas.json"), "r") as f:  # TBD
-        seed_ideas = json.load(f)
-    for seed_idea in seed_ideas:
-        idea_str_archive.append(json.dumps(seed_idea))
-
     with open(osp.join(base_dir, "experiment.py"), "r") as f:
         code = f.read()
 
@@ -103,6 +106,7 @@ def generate_ideas(
 
     idea_system_prompt = prompt["system"]
 
+    idea_str_archive = []
     for _ in range(max_num_generations):
         print()
         print(f"Generating idea {_ + 1}/{max_num_generations}")
@@ -303,17 +307,16 @@ def search_for_papers(query, result_limit=10) -> Union[None, List[Dict]]:
     return papers
 
 
-# TBD
-novelty_system_msg = """You are an ambitious AI PhD student who is looking to publish a paper that will contribute significantly to the field.
-You have an idea and you want to check if it is novel or not. I.e., not overlapping significantly with existing literature or already well explored.
-Be a harsh critic for novelty, ensure there is a sufficient contribution in the idea for a new conference or workshop paper.
+novelty_system_msg = """You are a professional experienced researcher, with much experience in machine learning and other fields, who is looking to solve deep problems.
+You have an idea regarding a problem and potential solution, and you want to check if it is novel or not. i.e., not overlapping significantly with existing literature or already well explored.
+Be a harsh critic for novelty, ensure the problem is a real one, the solution nontrivial, and it truly is relevant, interesting, and unsolved.
 You will be given access to the Semantic Scholar API, which you may use to survey the literature and find relevant papers to help you make your decision.
 The top 10 results for any search query will be presented to you with the abstracts.
 
-You will be given {num_rounds} to decide on the paper, but you do not need to use them all.
+You will be given {num_rounds} to decide on the problem and potential solution, but you do not need to use them all.
 At any round, you may exit early and decide on the novelty of the idea.
-Decide a paper idea is novel if after sufficient searching, you have not found a paper that significantly overlaps with your idea.
-Decide a paper idea is not novel, if you have found a paper that significantly overlaps with your idea.
+Decide an idea is novel if after sufficient searching, you have not found a paper that significantly overlaps with your idea.
+Decide an idea is not novel, if you have found a paper that significantly overlaps with your idea.
 
 {task_description}
 <experiment.py>
@@ -335,15 +338,19 @@ The results of the last query are (empty on first round):
 
 Respond in the following format:
 
+
+PROBLEM:
+<PROBLEM>
+
 THOUGHT:
 <THOUGHT>
 
-RESPONSE:
+NEW IDEA JSON:
 ```json
 <JSON>
 ```
 
-In <THOUGHT>, first briefly reason over the idea and identify any query that could help you make your decision.
+In <THOUGHT>, first briefly reason over the problem, potential solutions, and identify any query that could help you make your decision.
 If you have made your decision, add "Decision made: novel." or "Decision made: not novel." to your thoughts.
 
 In <JSON>, respond in JSON format with ONLY the following field:
