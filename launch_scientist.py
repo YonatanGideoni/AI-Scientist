@@ -83,6 +83,11 @@ def parse_arguments():
         default=50,
         help="Number of ideas to generate",
     )
+    parser.add_argument(
+        "--open",
+        action="store_true",
+        help="Run open-ended AI Scientist.",
+    )
     return parser.parse_args()
 
 
@@ -303,7 +308,7 @@ if __name__ == "__main__":
 
     base_dir = osp.join("templates", args.experiment)
     results_dir = osp.join("results", args.experiment)
-    if args.experiment != "open":
+    if not args.open:
         ideas = generate_ideas(
             base_dir,
             client=client,
