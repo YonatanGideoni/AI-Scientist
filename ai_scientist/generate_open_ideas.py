@@ -11,12 +11,18 @@ from ai_scientist.llm import get_response_from_llm, extract_json_between_markers
 
 S2_API_KEY = os.getenv("S2_API_KEY")
 
+problem_generation_prompt = """{task_description}
+Please give examples of open technical computational problems or open problems that can be addressed using computational approaches. Don't be afraid of being specific.
+"""
+
 idea_first_prompt = """{task_description}
 <experiment.py>
 {code}
 </experiment.py>
 
 Think about an interesting, deep, nuanced problem you want to solve and how you may go about solving it. It doesn't have to be grand, eg. solving intelligence, but it should be a real problem that you can feasibly investigate or at least make a simple proof of concept towards a possible solution. It can be in machine learning or any other field you are interested in and can deal with via computational means.
+The problem you end up with SHOULD NOT be a solution searching for a problem or something extremely vague, eg. not "better initialization strategies for neural networks", which is a solution, not a problem, but "improving information propagation through deep networks" which is a problem as it can be demonstrated. It is important to include a problem demonstration in your solution.
+The problem does not have to be a machine/deep learning problem but can be. Even within deep learning, it can be a problem that is not directly related to neural networks, but doesn't have to be. Be broad and creative but not vague, and ensure you're solving a real problem. Don't be too similar to ideas that have already been mentioned.
 Note that you will not have access to any additional resources or datasets except perhaps artificial ones you generate.
 Make sure the problem is well-defined and the solution is clear, feasible, and not overfit to the problem.
 
@@ -33,7 +39,9 @@ NEW IDEA JSON:
 <JSON>
 ```
 
-In <THOUGHT>, first briefly discuss your intuitions and motivations for the idea. Detail your high-level plan, necessary design choices, ideal outcomes of the experiments, and how it answers/resolves the problem.
+In <PROBLEM>, describe the problem you want to solve. Explain why it's a problem, what it affects, what are its implications, why it's interesting, and why it occurs. Think deeply and from first principles, especially regarding why it occurs and the implications thereof. 
+
+In <THOUGHT>, first briefly discuss your intuitions and motivations for the idea. Detail your high-level plan, necessary design choices, ideal outcomes of the experiments, and how it answers/resolves the problem. Think from first principles.
 
 In <JSON>, provide the new idea in JSON format with the following fields:
 - "Name": A shortened descriptor of the idea. Lowercase, no spaces, underscores allowed.
@@ -114,6 +122,17 @@ def generate_ideas(
             prev_ideas_string = "\n\n".join(idea_str_archive)
 
             msg_history = []
+            print('Generating initial interesting problems')
+            _, msg_history = get_response_from_llm(
+                problem_generation_prompt.format(
+                    task_description=prompt["task_description"],
+                ),
+                client=client,
+                model=model,
+                system_message=idea_system_prompt,
+                msg_history=msg_history,
+            )
+
             print(f"Iteration 1/{num_reflections}")
             text, msg_history = get_response_from_llm(
                 idea_first_prompt.format(
