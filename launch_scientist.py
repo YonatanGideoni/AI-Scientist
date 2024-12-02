@@ -14,6 +14,7 @@ from aider.models import Model
 from datetime import datetime
 
 from ai_scientist.generate_ideas import generate_ideas, check_idea_novelty
+from ai_scientist.generate_open_ideas import generate_ideas as generate_open_ideas
 from ai_scientist.llm import create_client, AVAILABLE_LLMS
 from ai_scientist.perform_experiments import perform_experiments
 from ai_scientist.perform_review import perform_review, load_paper, perform_improvement
@@ -302,14 +303,18 @@ if __name__ == "__main__":
 
     base_dir = osp.join("templates", args.experiment)
     results_dir = osp.join("results", args.experiment)
-    ideas = generate_ideas(
-        base_dir,
-        client=client,
-        model=client_model,
-        skip_generation=args.skip_idea_generation,
-        max_num_generations=args.num_ideas,
-        num_reflections=NUM_REFLECTIONS,
-    )
+    if args.experiment != "open":
+        ideas = generate_ideas(
+            base_dir,
+            client=client,
+            model=client_model,
+            skip_generation=args.skip_idea_generation,
+            max_num_generations=args.num_ideas,
+            num_reflections=NUM_REFLECTIONS,
+        )
+    else:
+        ideas = generate_open_ideas(base_dir, client=client, model=client_model, max_num_generations=args.num_ideas,
+                                    skip_generation=args.skip_idea_generation, num_reflections=NUM_REFLECTIONS)
     ideas = check_idea_novelty(
         ideas,
         base_dir=base_dir,
