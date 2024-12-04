@@ -14,7 +14,8 @@ from aider.models import Model
 from datetime import datetime
 
 from ai_scientist.generate_ideas import generate_ideas, check_idea_novelty
-from ai_scientist.generate_open_ideas import generate_ideas as generate_open_ideas
+from ai_scientist.generate_open_ideas import generate_ideas as generate_open_ideas, \
+    check_idea_novelty as check_open_idea_novelty
 from ai_scientist.llm import create_client, AVAILABLE_LLMS
 from ai_scientist.perform_experiments import perform_experiments
 from ai_scientist.perform_review import perform_review, load_paper, perform_improvement
@@ -320,12 +321,20 @@ if __name__ == "__main__":
     else:
         ideas = generate_open_ideas(base_dir, client=client, model=client_model, max_num_generations=args.num_ideas,
                                     skip_generation=args.skip_idea_generation, num_reflections=NUM_REFLECTIONS)
-    ideas = check_idea_novelty(
-        ideas,
-        base_dir=base_dir,
-        client=client,
-        model=client_model,
-    )
+    if not args.open:
+        ideas = check_idea_novelty(
+            ideas,
+            base_dir=base_dir,
+            client=client,
+            model=client_model,
+        )
+    else:
+        ideas = check_open_idea_novelty(
+            ideas,
+            base_dir=base_dir,
+            client=client,
+            model=client_model,
+        )
 
     with open(osp.join(base_dir, "ideas.json"), "w") as f:
         json.dump(ideas, f, indent=4)

@@ -25,7 +25,7 @@ idea_first_prompt = """{task_description}
 Think about an interesting, deep, nuanced problem you want to solve and how you may go about solving it. It doesn't have to be grand, eg. solving intelligence, but it should be a real problem that you can feasibly investigate or at least make a simple proof of concept towards a possible solution. It can be in machine learning or any other field you are interested in and can deal with via computational means.
 The problem you end up with SHOULD NOT be a solution searching for a problem or something extremely vague, eg. not "better initialization strategies for neural networks", which is a solution, not a problem, but "improving information propagation through deep networks" which is a problem as it can be demonstrated. It is important to include a problem demonstration in your solution.
 The problem does not have to be a machine/deep learning problem but can be. Even within deep learning, it can be a problem that is not directly related to neural networks, but doesn't have to be. Be broad and creative but not vague, and ensure you're solving a real problem. Don't be too similar to ideas that have already been mentioned.
-Note that you will not have access to any additional resources or datasets except perhaps artificial ones you generate.
+Note that you will not have access to any additional resources or datasets except perhaps artificial ones you generate. You CANNOT use large datasets like CIFAR10 or ImageNet. 
 Make sure the problem is well-defined and the solution is clear, feasible, and not overfit to the problem.
 
 Respond in the following format:
