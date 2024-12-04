@@ -94,7 +94,7 @@ def train(
         block_size=256,  # Context size for character datasets
         max_iters=5000,
         learning_rate=1e-3,
-        weight_decay=1e-1
+        weight_decay=1e-2
 ):
     # Set random seed
     torch.manual_seed(1337 + seed_offset)
