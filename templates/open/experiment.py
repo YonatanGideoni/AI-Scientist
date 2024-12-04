@@ -42,46 +42,48 @@ def get_dataset(dataset_name, data_dir):
 
     # Dataset mappings
     datasets_map = {
-        'mnist': {
+        'mnist': lambda: {
             'train': datasets.MNIST(data_dir, train=True, download=True, transform=transform_mnist),
             'test': datasets.MNIST(data_dir, train=False, transform=transform_mnist),
             'input_size': (1, 28, 28),
             'num_classes': 10,
-            'model_type': ...  # TBD
+            'model_type': None,  # TBD
         },
-        'shakespeare_char': {
+        'shakespeare_char': lambda: {
             'train': load_char_dataset('train'),
             'test': load_char_dataset('val'),
             'input_size': None,  # Handled dynamically based on block size
             'num_classes': None,  # Vocabulary size
-            'model_type': ...  # TBD
+            'model_type': None,  # TBD
         },
-        'enwik8': {
+        'enwik8': lambda: {
             'train': load_char_dataset('train'),
             'test': load_char_dataset('val'),
             'input_size': None,
             'num_classes': None,
-            'model_type': ...  # TBD
+            'model_type': None,  # TBD
         },
-        'text8': {
+        'text8': lambda: {
             'train': load_char_dataset('train'),
             'test': load_char_dataset('val'),
             'input_size': None,
             'num_classes': None,
-            'model_type': ...  # TBD
+            'model_type': None,  # TBD
         }
     }
+    # access and initialise only when needed, eg. datasets_map['text8']()
 
     # Add vocabulary size metadata for character-level datasets
+    dataset = datasets_map.get(dataset_name, lambda: None)()
     if dataset_name in ['shakespeare_char', 'enwik8', 'text8']:
         meta_path = os.path.join(data_dir, dataset_name, 'meta.pkl')
         if not os.path.exists(meta_path):
             raise FileNotFoundError(f"{meta_path} not found. Run preprocessing first.")
         with open(meta_path, 'rb') as f:
             meta = pickle.load(f)
-        datasets_map[dataset_name]['num_classes'] = meta['vocab_size']
+        dataset['num_classes'] = meta['vocab_size']
 
-    return datasets_map.get(dataset_name, None)
+    return dataset
 
 
 def train(
